@@ -1107,307 +1107,66 @@ footer{padding:44px 0;border-top:1px solid var(--line)}
 <!-- ============================================================
      JAVASCRIPT
 ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
 <script>
-'use strict';
+  // 2. TEMPELKAN KONFIGURASI ANDA DI SINI
+  // Ganti isi di dalam kurung kurawal ini dengan yang Anda salin dari Firebase (Config)
+  const firebaseConfig = {
+    apiKey: "AIzaSy...", 
+    authDomain: "josua-wangke-8395e.firebaseapp.com",
+    databaseURL: "https://josua-wangke-8395e-default-rtdb.firebaseio.com/",
+    projectId: "josua-wangke-8395e",
+    storageBucket: "josua-wangke-8395e.appspot.com",
+    messagingSenderId: "1098418041535",
+    appId: "1:1098418041535:web:..."
+  };
 
-/* ── ADMIN PASSWORD (change this before going live!) ── */
-/* To change: replace 'josua2025' with your own password  */
-let ADMIN_PW = localStorage.getItem('jw_pw') || 'josua2025';
+  // Mulai Koneksi
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-/* ── NAV SCROLL ── */
-const nav = document.getElementById('nav');
-window.addEventListener('scroll',()=>nav.classList.toggle('sc',scrollY>40),{passive:true});
-nav.classList.toggle('sc',scrollY>40);
-
-/* ── MOBILE NAV ── */
-const ntog=document.getElementById('ntog');
-const ndraw=document.getElementById('ndraw');
-ntog.addEventListener('click',()=>{
-  const o=ndraw.classList.toggle('op');
-  ntog.classList.toggle('op',o);
-  document.body.style.overflow=o?'hidden':'';
-});
-ndraw.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
-  ndraw.classList.remove('op');ntog.classList.remove('op');
-  document.body.style.overflow='';
-}));
-
-/* ── SMOOTH SCROLL ── */
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    const t=document.querySelector(a.getAttribute('href'));
-    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}
-  });
-});
-
-/* ── SCROLL REVEAL ── */
-const reveals=document.querySelectorAll('.reveal');
-const ro=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);}});
-},{threshold:0.08,rootMargin:'0px 0px -28px 0px'});
-reveals.forEach(el=>ro.observe(el));
-
-/* ── ACTIVE NAV LINK ── */
-const secs=document.querySelectorAll('section[id]');
-const nls=document.querySelectorAll('.nlinks a[href^="#"]');
-new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting)nls.forEach(a=>a.classList.toggle('act',a.getAttribute('href')==='#'+e.target.id));
-  });
-},{threshold:0.45}).observe && secs.forEach(s=>new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting)nls.forEach(a=>a.classList.toggle('act',a.getAttribute('href')==='#'+e.target.id));
-  });
-},{threshold:0.45}).observe(s));
-
-/* ── SKILL BARS ── */
-const bars=document.querySelectorAll('.skbar');
-const skillSec=document.getElementById('skillSec');
-new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      bars.forEach((b,i)=>setTimeout(()=>{b.style.width=b.dataset.w+'%'},i*100));
+  // 3. FUNGSI MENAMPILKAN DATA (REAL-TIME)
+  // Kode ini akan membuat teks di web berubah otomatis saat data di Google berubah
+  db.ref('portfolio_live').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      if(data.headline) document.getElementById('heroHeadline').innerHTML = data.headline;
+      if(data.sub) document.getElementById('heroSub').textContent = data.sub;
+      if(data.about) document.getElementById('aboutP1').textContent = data.about;
     }
   });
-},{threshold:0.2}).observe(skillSec);
 
-/* ── CONTACT FORM ── */
-const cform=document.getElementById('cform');
-const fsub=document.getElementById('fsub');
-const fs=document.getElementById('fs');
-cform.addEventListener('submit',e=>{
-  e.preventDefault();
-  const d=Object.fromEntries(new FormData(cform));
-  const re=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  fs.style.color='#E87A7A';
-  if(!d.fn)return(fs.textContent='Please enter your first name.');
-  if(!re.test(d.em))return(fs.textContent='Please enter a valid email.');
-  if(!d.msg)return(fs.textContent='Please write a message.');
-  fsub.textContent='Sending…';fsub.disabled=true;fs.textContent='';
-  setTimeout(()=>{
-    fsub.textContent='Sent ✓';
-    fsub.style.cssText='background:#2E7D52;border-color:#2E7D52;color:#fff';
-    fs.style.color='#6DBF8A';
-    fs.textContent=`Thanks, ${d.fn}! I'll reply within 24 hours.`;
-    cform.reset();
-    setTimeout(()=>{
-      fsub.textContent='Send Message →';
-      fsub.style.cssText='';fsub.disabled=false;fs.textContent='';
-    },6000);
-  },1400);
-});
-
-/* ── CURSOR GLOW ── */
-if(matchMedia('(pointer:fine)').matches){
-  const g=document.createElement('div');
-  Object.assign(g.style,{
-    position:'fixed',width:'280px',height:'280px',borderRadius:'50%',
-    pointerEvents:'none',zIndex:'9000',
-    background:'radial-gradient(circle,rgba(191,155,78,0.04) 0%,transparent 68%)',
-    transform:'translate(-50%,-50%)',left:'-999px',top:'-999px',
-    transition:'left .1s,top .1s'
-  });
-  document.body.appendChild(g);
-  document.addEventListener('mousemove',e=>{g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
-}
-
-/* ================================================================
-   PHOTO SYSTEM — applies to BOTH hero and about sections
-================================================================ */
-function applyPhoto(src){
-  /* Hero photo */
-  const hi=document.getElementById('heroImg');
-  const hf=document.getElementById('heroFallback');
-  if(src){hi.src=src;hi.style.display='block';hf.style.display='none';}
-  else{hi.style.display='none';hf.style.display='flex';}
-
-  /* About photo */
-  const ai=document.getElementById('aboutImg');
-  const af=document.getElementById('aboutFallback');
-  if(src){ai.src=src;ai.style.display='block';af.style.display='none';}
-  else{ai.style.display='none';af.style.display='flex';}
-
-  /* Admin panel preview */
-  const ap=document.getElementById('apcImg');
-  const apf=document.getElementById('apcFallback');
-  if(src){ap.src=src;ap.style.display='block';apf.style.display='none';}
-  else{ap.style.display='none';apf.style.display='block';}
-}
-
-/* Load saved photo on page load */
-try{
-  const saved=localStorage.getItem('jw_photo');
-  if(saved)applyPhoto(saved);
-}catch(err){}
-
-/* Admin photo upload handler */
-document.getElementById('adminPhotoIn').addEventListener('change',function(){
-  const f=this.files[0];
-  if(!f||!f.type.startsWith('image/'))return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    const src=ev.target.result;
-    applyPhoto(src);
-    try{localStorage.setItem('jw_photo',src);}catch(err){}
-    const ps=document.getElementById('photoSaved');
-    ps.textContent='✓ Photo saved!';
-    setTimeout(()=>{ps.textContent=''},3000);
-  };
-  r.readAsDataURL(f);
-});
-
-/* ================================================================
-   ADMIN PANEL LOGIC
-================================================================ */
-const adminKey=document.getElementById('adminKey');
-const adminLock=document.getElementById('adminLock');
-const adminPanel=document.getElementById('adminPanel');
-const pwInput=document.getElementById('pwInput');
-const pwErr=document.getElementById('pwErr');
-const pwSubmit=document.getElementById('pwSubmit');
-const pwCancel=document.getElementById('pwCancel');
-const apClose=document.getElementById('apClose');
-
-/* Open lock screen */
-adminKey.addEventListener('click',()=>{
-  adminLock.classList.add('show');
-  setTimeout(()=>pwInput.focus(),300);
-});
-
-/* Cancel lock */
-pwCancel.addEventListener('click',closeLock);
-adminLock.addEventListener('click',e=>{if(e.target===adminLock)closeLock()});
-function closeLock(){adminLock.classList.remove('show');pwInput.value='';pwErr.textContent='';}
-
-/* Submit password */
-function tryUnlock(){
-  const val=pwInput.value.trim();
-  if(val===ADMIN_PW){
-    closeLock();
-    openPanel();
-  }else{
-    pwErr.textContent='Incorrect password. Try again.';
-    pwInput.value='';
-    pwInput.focus();
+  // 4. PERBAIKAN FUNGSI SAVE (Agar simpan ke Cloud, bukan ke laptop saja)
+  function saveH() {
+    const h1 = document.getElementById('inH1').value.trim();
+    const h2 = document.getElementById('inH2').value.trim();
+    if(!h1 || !h2) return;
+    const full = `${h1}<br/>into visuals that<br/><em>${h2}</em>`;
+    
+    // Kirim ke Google Cloud
+    db.ref('portfolio_live').update({ headline: full })
+      .then(() => flash('Tersimpan secara Global!'));
   }
-}
-pwSubmit.addEventListener('click',tryUnlock);
-pwInput.addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
 
-/* Open panel */
-function openPanel(){
-  /* Pre-fill admin fields with current content */
-  const h1=document.getElementById('heroHeadline');
-  if(h1){
-    const lines=h1.querySelectorAll('br');
-    document.getElementById('hl1').value='I turn complex ideas';
-    document.getElementById('hl2').value='teach & inspire.';
+  function saveSub() {
+    const txt = document.getElementById('inSub').value.trim();
+    if(!txt) return;
+    
+    // Kirim ke Google Cloud
+    db.ref('portfolio_live').update({ sub: txt })
+      .then(() => flash('Subtitle Sinkron!'));
   }
-  const p1=document.getElementById('aboutP1');
-  if(p1)document.getElementById('ap1').value=p1.innerText;
-  const sub=document.getElementById('heroSub');
-  if(sub)document.getElementById('apSub').value=sub.innerText;
 
-  adminPanel.style.display='block';
-  requestAnimationFrame(()=>adminPanel.classList.add('open'));
-  document.body.style.paddingBottom=adminPanel.offsetHeight+'px';
-}
-
-apClose.addEventListener('click',()=>{
-  adminPanel.classList.remove('open');
-  setTimeout(()=>{adminPanel.style.display='none';},450);
-  document.body.style.paddingBottom='';
-});
-
-/* ── Save functions ── */
-function saveHeadline(){
-  const l1=document.getElementById('hl1').value.trim();
-  const l2=document.getElementById('hl2').value.trim();
-  if(!l1)return;
-  const h=document.getElementById('heroHeadline');
-  h.innerHTML=`${l1}<br/>into visuals that<br/><em>${l2}</em>`;
-  try{localStorage.setItem('jw_hl1',l1);localStorage.setItem('jw_hl2',l2);}catch(e){}
-  flash('Headline saved!');
-}
-
-function saveAbout(){
-  const txt=document.getElementById('ap1').value.trim();
-  if(!txt)return;
-  const p=document.getElementById('aboutP1');
-  p.innerHTML=`My name is <strong style="color:var(--tw);font-weight:400">Josua Wangke</strong>. ${txt}`;
-  try{localStorage.setItem('jw_ap1',txt);}catch(e){}
-  flash('About text saved!');
-}
-
-function saveContact(){
-  const em=document.getElementById('acEmail').value.trim();
-  const ig=document.getElementById('acIg').value.trim();
-  const loc=document.getElementById('acLoc').value.trim();
-  document.querySelectorAll('.citem').forEach(item=>{
-    const key=item.querySelector('.ckey2');
-    if(!key)return;
-    const val=item.querySelector('div:last-child');
-    if(key.textContent==='Email'&&em){val.textContent=em;item.href='mailto:'+em;}
-    if(key.textContent==='Instagram'&&ig){val.textContent=ig;item.href='https://instagram.com/'+ig.replace('@','');}
-    if(key.textContent==='Location'&&loc)val.textContent=loc;
-  });
-  try{localStorage.setItem('jw_em',em);localStorage.setItem('jw_ig',ig);localStorage.setItem('jw_loc',loc);}catch(e){}
-  flash('Contact info saved!');
-}
-
-function changePw(){
-  const np=document.getElementById('newPw').value;
-  const cp=document.getElementById('confPw').value;
-  const ps=document.getElementById('pwSaved');
-  if(np.length<6){ps.style.color='#E87A7A';ps.textContent='Min. 6 characters.';return;}
-  if(np!==cp){ps.style.color='#E87A7A';ps.textContent='Passwords do not match.';return;}
-  ADMIN_PW=np;
-  try{localStorage.setItem('jw_pw',np);}catch(e){}
-  ps.style.color='#6DBF8A';ps.textContent='✓ Password updated!';
-  document.getElementById('newPw').value='';
-  document.getElementById('confPw').value='';
-  setTimeout(()=>{ps.textContent=''},3000);
-}
-
-function saveSub(){
-  const txt=document.getElementById('apSub').value.trim();
-  if(!txt)return;
-  const s=document.getElementById('heroSub');
-  if(s)s.textContent=txt;
-  try{localStorage.setItem('jw_sub',txt);}catch(e){}
-  flash('Subtitle saved!');
-}
-
-function flash(msg){
-  document.querySelectorAll('.ap-saved').forEach(el=>{
-    el.style.color='#6DBF8A';el.textContent=msg;
-    setTimeout(()=>{el.textContent=''},3000);
-  });
-}
-
-/* ── Restore saved edits on load ── */
-try{
-  const l1=localStorage.getItem('jw_hl1');
-  const l2=localStorage.getItem('jw_hl2');
-  if(l1&&l2)document.getElementById('heroHeadline').innerHTML=`${l1}<br/>into visuals that<br/><em>${l2}</em>`;
-  const ap1=localStorage.getItem('jw_ap1');
-  if(ap1)document.getElementById('aboutP1').innerHTML=`My name is <strong style="color:var(--tw);font-weight:400">Josua Wangke</strong>. ${ap1}`;
-  const sub=localStorage.getItem('jw_sub');
-  if(sub)document.getElementById('heroSub').textContent=sub;
-  const em=localStorage.getItem('jw_em');
-  const ig=localStorage.getItem('jw_ig');
-  const loc=localStorage.getItem('jw_loc');
-  if(em||ig||loc){
-    document.querySelectorAll('.citem').forEach(item=>{
-      const key=item.querySelector('.ckey2');
-      if(!key)return;
-      const val=item.querySelector('div:last-child');
-      if(key.textContent==='Email'&&em){val.textContent=em;item.href='mailto:'+em;}
-      if(key.textContent==='Instagram'&&ig){val.textContent=ig;}
-      if(key.textContent==='Location'&&loc)val.textContent=loc;
-    });
+  // Fungsi notifikasi kecil
+  function flash(msg) {
+    const el = document.querySelector('.ap-saved');
+    if(el) {
+      el.style.color='#6DBF8A'; el.textContent=msg;
+      setTimeout(()=>{el.textContent=''}, 3000);
+    }
   }
-}catch(e){}
 </script>
 </body>
 </html>
